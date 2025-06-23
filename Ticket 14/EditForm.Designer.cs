@@ -39,6 +39,8 @@
             this.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
             this.Name = "EditForm";
             this.Text = "EditForm";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditForm_FormClosing);
+            this.Load += new System.EventHandler(this.EditForm_Load);
             this.ResumeLayout(false);
 
         }

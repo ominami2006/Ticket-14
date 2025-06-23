@@ -24,7 +24,7 @@ namespace Ticket_14 {
                 string schema = row["TABLE_SCHEMA"].ToString();
                 string name = row["TABLE_NAME"].ToString();
                 if (schema != "sys" && schema != "INFORMATION_SCHEMA")
-                    tables.Add($"[{schema}].[{name}]");
+                    tables.Add(name);
             }
             return tables.OrderBy(t => t).ToList();
         }
@@ -32,7 +32,7 @@ namespace Ticket_14 {
             var dataTable = new DataTable();
             if (string.IsNullOrEmpty(tableName)) return dataTable;
             Connect();
-            using (var adapter = new SqlDataAdapter($"SELECT * FROM {tableName}", _connection)) {
+            using (var adapter = new SqlDataAdapter($"SELECT * FROM [{tableName}]", _connection)) {
                 adapter.Fill(dataTable);
             }
             return dataTable;
@@ -40,9 +40,8 @@ namespace Ticket_14 {
         public List<string> GetPrimaryKeys(string tableName) {
             Connect();
             var keys = new List<string>();
-            var parts = tableName.Replace("[", "").Replace("]", "").Split('.');
-            var schemaName = parts[0];
-            var pureTableName = parts[1];
+            var schemaName = "dbo"; // если все таблицы в dbo
+            var pureTableName = tableName;
             using (var command = _connection.CreateCommand()) {
                 command.CommandText = @"
                     SELECT kcu.COLUMN_NAME
@@ -82,13 +81,14 @@ namespace Ticket_14 {
                 return command.ExecuteNonQuery();
             }
         }
-        public int InsertRow(string tableName, Dictionary<string, object> values) {
+        public int InsertRow(string tableName, Dictionary<string, object> values, List<string> autoIncrementColumns) {
             Connect();
+            var filteredValues = values.Where(kvp => !autoIncrementColumns.Contains(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             using (var command = _connection.CreateCommand()) {
-                var columns = values.Keys.Select(k => $"[{k}]");
-                var parameters = values.Keys.Select(k => $"@{k}");
-                command.CommandText = $"INSERT INTO {tableName} ({string.Join(", ", columns)}) VALUES ({string.Join(", ", parameters)})";
-                foreach (var kvp in values)
+                var columns = filteredValues.Keys.Select(k => $"[{k}]");
+                var parameters = filteredValues.Keys.Select(k => $"@{k}");
+                command.CommandText = $"INSERT INTO [{tableName}] ({string.Join(", ", columns)}) VALUES ({string.Join(", ", parameters)})";
+                foreach (var kvp in filteredValues)
                     command.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value ?? DBNull.Value);
                 return command.ExecuteNonQuery();
             }
