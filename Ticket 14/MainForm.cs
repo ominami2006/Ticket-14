@@ -58,7 +58,7 @@ namespace Ticket_14 {
         private void btnAdd_Click(object sender, EventArgs e) {
             if (string.IsNullOrEmpty(_selectedTable) || dataGridView.DataSource == null) return;
             var tableSchema = (DataTable)dataGridView.DataSource;
-            using (var form = new EditForm(tableSchema.Clone(), null, _currentPrimaryKeys)) {
+            using (var form = new EditForm(tableSchema, null, _currentPrimaryKeys)) {
                 if (form.ShowDialog() == DialogResult.OK) {
                     try {
                         var autoIncrementColumns = tableSchema.Columns
@@ -79,7 +79,7 @@ namespace Ticket_14 {
             if (dataGridView.SelectedRows.Count == 0) return;
             var selectedRow = ((DataRowView)dataGridView.SelectedRows[0].DataBoundItem).Row;
             var tableSchema = (DataTable)dataGridView.DataSource;
-            using (var form = new EditForm(tableSchema.Clone(), selectedRow, _currentPrimaryKeys)) {
+            using (var form = new EditForm(tableSchema, selectedRow, _currentPrimaryKeys)) {
                 if (form.ShowDialog() == DialogResult.OK) {
                     try {
                         var pkValues = new Dictionary<string, object>();

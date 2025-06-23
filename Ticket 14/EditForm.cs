@@ -13,8 +13,8 @@ namespace Ticket_14 {
         private List<string> _pkColumns;
         public EditForm(DataTable table, DataRow rowToEdit = null, List<string> pkColumns = null) {
             InitializeComponent();
-            _readOnlyColumns = _pkColumns ?? new List<string>();
-            _pkColumns = pkColumns;
+            _pkColumns = pkColumns ?? new List<string>();
+            _readOnlyColumns = _pkColumns;
             _rowToEdit = rowToEdit; 
             _table = table;
         }
